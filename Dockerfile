@@ -1,23 +1,11 @@
-FROM python:3.12-alpine
+FROM golang:1.25-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY *.go ./
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /publish-test-results .
 
-LABEL repository="https://github.com/EnricoMi/publish-unit-test-result-action"
-LABEL homepage="https://github.com/EnricoMi/publish-unit-test-result-action"
-LABEL maintainer="Enrico Minack <github@Enrico.Minack.dev>"
-
-LABEL com.github.actions.name="Publish Test Results"
-LABEL com.github.actions.description="A GitHub Action to publish test results."
-LABEL com.github.actions.icon="check-circle"
-LABEL com.github.actions.color="green"
-
-RUN apk add --no-cache --upgrade expat libuuid
-
-COPY python/requirements-post-3.8.txt /action/requirements.txt
-RUN apk add --no-cache build-base libffi-dev; \
-    pip install --upgrade --force --no-cache-dir pip && \
-    pip install --upgrade --force --no-cache-dir -r /action/requirements.txt; \
-    apk del build-base libffi-dev
-
-COPY python/publish /action/publish
-COPY python/publish_test_results.py /action/
-
-ENTRYPOINT ["python", "/action/publish_test_results.py"]
+FROM alpine:latest
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /publish-test-results /publish-test-results
+ENTRYPOINT ["/publish-test-results"]
