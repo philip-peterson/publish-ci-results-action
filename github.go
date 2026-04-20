@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -96,6 +97,7 @@ func updatePRComment(ctx context.Context, gh *github.Client, cfg *Config, r *Res
 		return err
 	}
 	if prNum == 0 {
+		log.Printf("PR comment skipped: no open PR found for SHA %s", cfg.SHA)
 		return nil
 	}
 
@@ -125,14 +127,22 @@ func updatePRComment(ctx context.Context, gh *github.Client, cfg *Config, r *Res
 }
 
 func findPR(ctx context.Context, gh *github.Client, cfg *Config) (int, error) {
+	if cfg.PRNumber != 0 {
+		log.Printf("PR comment: using PR #%d from GITHUB_REF", cfg.PRNumber)
+		return cfg.PRNumber, nil
+	}
+
+	log.Printf("PR comment: looking up open PR for SHA %s via API", cfg.SHA)
 	prs, _, err := gh.PullRequests.ListPullRequestsWithCommit(ctx, cfg.Owner, cfg.Repo, cfg.SHA, nil)
 	if err != nil {
 		return 0, err
 	}
 	for _, pr := range prs {
 		if pr.GetState() == "open" {
+			log.Printf("PR comment: found PR #%d", pr.GetNumber())
 			return pr.GetNumber(), nil
 		}
 	}
+	log.Printf("PR comment: API returned %d PRs for SHA %s, none open", len(prs), cfg.SHA)
 	return 0, nil
 }

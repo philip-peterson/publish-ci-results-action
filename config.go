@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+const prRefPrefix = "refs/pull/"
+const prRefSuffix = "/merge"
+
 type Config struct {
 	Token       string
 	Files       []string
@@ -21,6 +24,7 @@ type Config struct {
 	Owner     string
 	Repo      string
 	SHA       string
+	PRNumber  int // set when GITHUB_REF is refs/pull/N/merge
 }
 
 func loadConfig() (*Config, error) {
@@ -34,6 +38,14 @@ func loadConfig() (*Config, error) {
 		TimeUnit:    envOr("INPUT_TIME_UNIT", "seconds"),
 		APIURL:      envOr("GITHUB_API_URL", "https://api.github.com"),
 		SHA:         os.Getenv("GITHUB_SHA"),
+	}
+
+	if ref := os.Getenv("GITHUB_REF"); strings.HasPrefix(ref, prRefPrefix) && strings.HasSuffix(ref, prRefSuffix) {
+		inner := strings.TrimPrefix(ref, prRefPrefix)
+		inner = strings.TrimSuffix(inner, prRefSuffix)
+		if n, err := strconv.Atoi(inner); err == nil {
+			cfg.PRNumber = n
+		}
 	}
 
 	repo := os.Getenv("GITHUB_REPOSITORY")
