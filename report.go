@@ -60,15 +60,9 @@ func resultsSummaryMarkdown(r *Results) string {
 	fmt.Fprintf(&b, "| **Total** | **%d** |\n", r.Total)
 	fmt.Fprintf(&b, "\nDuration: %s\n", formatDuration(r.Duration))
 
-	var failures []TestCase
-	for _, c := range r.Cases {
-		if c.Status == StatusFailed || c.Status == StatusError {
-			failures = append(failures, c)
-		}
-	}
-	if len(failures) > 0 {
-		fmt.Fprintf(&b, "\n<details>\n<summary>%d failed</summary>\n\n", len(failures))
-		for _, f := range failures {
+	if len(r.Failures) > 0 {
+		fmt.Fprintf(&b, "\n<details>\n<summary>%d failed</summary>\n\n", len(r.Failures))
+		for _, f := range r.Failures {
 			name := f.Name
 			if f.ClassName != "" {
 				name = f.ClassName + "." + f.Name

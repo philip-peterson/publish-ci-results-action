@@ -99,7 +99,6 @@ func collectJUnit(cases *[]TestCase, s junit.Suite, timeUnit string) {
 			dur /= 1000
 		}
 		c := TestCase{
-			Suite:     s.Name,
 			Name:      t.Name,
 			ClassName: t.Classname,
 			Duration:  dur,

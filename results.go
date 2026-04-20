@@ -12,18 +12,15 @@ const (
 )
 
 type TestCase struct {
-	Suite     string
 	Name      string
 	ClassName string
-	File      string
-	Line      int
 	Duration  time.Duration
 	Status    Status
 	Message   string
 }
 
 type Results struct {
-	Cases    []TestCase
+	Failures []TestCase
 	Total    int
 	Passed   int
 	Failed   int
@@ -33,7 +30,6 @@ type Results struct {
 }
 
 func (r *Results) add(c TestCase) {
-	r.Cases = append(r.Cases, c)
 	r.Total++
 	r.Duration += c.Duration
 	switch c.Status {
@@ -41,9 +37,11 @@ func (r *Results) add(c TestCase) {
 		r.Passed++
 	case StatusFailed:
 		r.Failed++
+		r.Failures = append(r.Failures, c)
 	case StatusSkipped:
 		r.Skipped++
 	case StatusError:
 		r.Errors++
+		r.Failures = append(r.Failures, c)
 	}
 }

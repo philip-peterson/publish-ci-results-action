@@ -22,8 +22,7 @@ func parseTRX(data []byte) ([]TestCase, error) {
 		TestMethod testMethod `xml:"TestMethod"`
 	}
 	type errorInfo struct {
-		Message    string `xml:"Message"`
-		StackTrace string `xml:"StackTrace"`
+		Message string `xml:"Message"`
 	}
 	type output struct {
 		ErrorInfo *errorInfo `xml:"ErrorInfo"`

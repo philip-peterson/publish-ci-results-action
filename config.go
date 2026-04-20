@@ -56,23 +56,17 @@ func loadConfig() (*Config, error) {
 	cfg.Owner, cfg.Repo = parts[0], parts[1]
 
 	filesRaw := firstNonEmpty(os.Getenv("INPUT_FILES"), os.Getenv("INPUT_REPORT_PATHS"))
-	for _, line := range strings.Split(filesRaw, "\n") {
-		for _, f := range strings.Fields(line) {
-			cfg.Files = append(cfg.Files, f)
-		}
-	}
+	cfg.Files = strings.Fields(strings.ReplaceAll(filesRaw, "\n", " "))
 	if len(cfg.Files) == 0 {
 		return nil, fmt.Errorf("config: INPUT_FILES is required")
 	}
 
-	if cfg.FailOn == "test failures" {
-		if v := os.Getenv("INPUT_FAIL_ON_FAILURE"); v != "" {
-			if b, err := strconv.ParseBool(v); err == nil {
-				if b {
-					cfg.FailOn = "test failures"
-				} else {
-					cfg.FailOn = "nothing"
-				}
+	if v := os.Getenv("INPUT_FAIL_ON_FAILURE"); v != "" {
+		if b, err := strconv.ParseBool(v); err == nil {
+			if b {
+				cfg.FailOn = "test failures"
+			} else {
+				cfg.FailOn = "nothing"
 			}
 		}
 	}

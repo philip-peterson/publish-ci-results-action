@@ -59,15 +59,8 @@ func run() error {
 		}
 	}
 
-	switch cfg.FailOn {
-	case "test failures":
-		if results.Failed > 0 || results.Errors > 0 {
-			os.Exit(1)
-		}
-	case "errors":
-		if results.Errors > 0 {
-			os.Exit(1)
-		}
+	if checkRunConclusion(results, cfg.FailOn) == "failure" {
+		os.Exit(1)
 	}
 
 	return nil
